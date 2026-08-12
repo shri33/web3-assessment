@@ -3,6 +3,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const path = require('path');
 const killPort = require('kill-port');
+const { ethers } = require('ethers');
 
 require('dotenv').config();
 
@@ -39,6 +40,33 @@ const checkPort = async (port, maxPort = 65535) => {
     // Routes
     app.use('/api/items', require('./routes/items'));
     app.use('/api/stats', require('./routes/stats'));
+
+    app.get('/api/ShrisApiTest', async (req, res) => {
+        try {
+            // Use a lightning-fast, free public node that doesn't require an API key
+            const provider = new ethers.JsonRpcProvider('https://ethereum-rpc.publicnode.com');
+            
+            // Vitalik's public Ethereum address
+            const vitalikAddress = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045';
+            
+            // Fetch balance from the blockchain
+            const balanceWei = await provider.getBalance(vitalikAddress);
+            const balanceEth = ethers.formatEther(balanceWei);
+            
+            // Log to console as required by the assignment
+            console.log(`[ShrisApiTest] Fetched Vitalik's balance: ${balanceEth} ETH`);
+            
+            res.json({
+                success: true,
+                address: vitalikAddress,
+                balanceEth: balanceEth,
+                message: "Data fetched successfully from Ethereum Mainnet"
+            });
+        } catch (error) {
+            console.error('[ShrisApiTest] Error fetching data:', error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    });
 
     /**
      * @route    [HTTP_METHOD] /api/endpoint
